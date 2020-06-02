@@ -14,7 +14,7 @@ screenSize = (1024, 768)
 roadImage = pygame.image.load('images/road.jpg')
 carImage = pygame.image.load('images/car.png')
 
-FPS = 30
+FPS = 60
 fpsClock = pygame.time.Clock()
 
 class Game:
@@ -22,7 +22,7 @@ class Game:
         self.size = size
         self.R1 = road.Road(roadImage, [0, 0], 5)
         self.R2 = road.Road(roadImage, [0, 0 - roadImage.get_rect().height], 5)
-        self.car = car.Car(carImage, [ screenSize[0]/2 - carImage.get_rect().width/2, screenSize[1] - carImage.get_rect().height-10 ], 0)
+        self.car = car.Car(carImage, [ self.R1.width/2 - carImage.get_rect().width/2, self.R1.height - carImage.get_rect().height - 50 ], 5)
 
 
     def run(self):
@@ -40,6 +40,16 @@ class Game:
         for event in pygame.event.get():
             if event.type == QUIT:
                 exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_LEFT:
+                    self.car.isMovingLeft = True
+                elif event.key == K_RIGHT:
+                    self.car.isMovingRight = True
+            elif event.type == KEYUP:
+                if event.key == K_LEFT:
+                    self.car.isMovingLeft = False
+                elif event.key == K_RIGHT:
+                    self.car.isMovingRight = False
 
     def updateScreen(self):
         self.screen.fill((0, 0, 0))
@@ -49,4 +59,5 @@ class Game:
         pygame.display.update()
         self.R1.move()
         self.R2.move()
+        self.car.move()
         fpsClock.tick(FPS)

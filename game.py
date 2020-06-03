@@ -4,7 +4,7 @@ from sys import exit
 import car
 import obstacle
 import road
-
+import random
 
 # Screen Size
 screenSize = (1024, 768)
@@ -29,22 +29,21 @@ class Game:
         self.R1 = road.Road(roadImage, [0, 0], 5)
         self.R2 = road.Road(roadImage, [0, 0 - roadImage.get_rect().height], 5)
         self.car = car.Car(carImage, [ self.R1.width/2 - carImage.get_rect().width/2, self.R1.height - carImage.get_rect().height - 50 ], 5)
-        self.O1 = obstacle.Obstacle(obstacleImages[0], [ 0, 0 ], 5)
-        self.O2 = obstacle.Obstacle(obstacleImages[1], [ self.R1.width - obstacleImages[1].get_rect().width, 0 ], 5)
-        self.O3 = obstacle.Obstacle(obstacleImages[2], [ self.R1.width/4 , 0 ], 5)
-        self.O4 = obstacle.Obstacle(obstacleImages[3], [ 3 * self.R1.width/4 , 0 ], 5)
+        self.obstacles = []
 
     def run(self):
+        y = 192
         pygame.init
         pygame.display.set_caption('BRAKE FAIL')
         self.screen = pygame.display.set_mode(self.size, 0, 32)
         self.R1.image = self.R1.image.convert()
         self.R2.image = self.R2.image.convert()
         self.car.image = self.car.image.convert_alpha()
-        self.O1.image = self.O1.image.convert_alpha()
-        self.O2.image = self.O2.image.convert_alpha()
-        self.O3.image = self.O3.image.convert_alpha()
-        self.O4.image = self.O4.image.convert_alpha()
+        for images in obstacleImages:
+            images = images.convert_alpha()
+        for i in range(4):
+            self.obstacles.append(obstacle.Obstacle(obstacleImages[random.randint(0, 3)],  -y, 6),)
+            y += 192
         while True:
             self.handleEvents()
             self.updateScreen()
@@ -69,16 +68,16 @@ class Game:
         self.screen.blit(self.R1.image, (self.R1.posx, self.R1.posy))
         self.screen.blit(self.R2.image, (self.R2.posx, self.R2.posy))
         self.screen.blit(self.car.image, (self.car.posx, self.car.posy))
-        self.screen.blit(self.O1.image, (self.O1.posx, self.O1.posy))
-        self.screen.blit(self.O2.image, (self.O2.posx, self.O2.posy))
-        self.screen.blit(self.O3.image, (self.O3.posx, self.O3.posy))
-        self.screen.blit(self.O4.image, (self.O4.posx, self.O4.posy))
+        for ob in self.obstacles:
+            self.screen.blit(ob.image, (ob.posx, ob.posy))
         pygame.display.update()
         self.R1.move()
         self.R2.move()
         self.car.move()
-        self.O1.move()
-        self.O2.move()
-        self.O3.move()
-        self.O4.move()
+        for ob in self.obstacles:
+            ob.move()
+            if ob.posy > 768:
+                ob.image = obstacleImages[random.randint(0, 3)]
+                ob.posy = -192
+                ob.posx = random.randint(0, 1024 - ob.width)
         fpsClock.tick(FPS)

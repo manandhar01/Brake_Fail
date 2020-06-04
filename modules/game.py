@@ -146,9 +146,12 @@ class Game:
         _quitRect = _quit.get_rect()
         _quitRect.center = (screenSize[0]/2, 3*screenSize[1]/4)
         font = pygame.font.Font('fonts/comic.ttf', 20)
-        guide = font.render('Use Up and Down arrow keys to navigate. Press Return to select.', True, (0, 0, 0))
-        guideRect = guide.get_rect()
-        guideRect.center = (screenSize[0]/2, 9*screenSize[1]/10)
+        guide1 = font.render('Use Up and Down arrow keys to navigate. Press Return to select.', True, (0, 0, 0))
+        guide1Rect = guide1.get_rect()
+        guide1Rect.center = (screenSize[0]/2, 9*screenSize[1]/10)
+        guide2 = font.render('Use Left and Right arrow keys to control the car.', True, (0, 0, 0))
+        guide2Rect = guide2.get_rect()
+        guide2Rect.center = (screenSize[0]/2, 9*screenSize[1]/10 + 30)
         while self.pause:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -184,7 +187,8 @@ class Game:
                 pygame.draw.rect(self.screen, (0, 0, 0), (screenSize[0]/2 - 120, 3*screenSize[1]/4 - 50, 240, 100), 10)
             self.screen.blit(resume, resumeRect)
             self.screen.blit(_quit, _quitRect)
-            self.screen.blit(guide, guideRect)
+            self.screen.blit(guide1, guide1Rect)
+            self.screen.blit(guide2, guide2Rect)
             pygame.display.update()
 
     def detectCollisions(self):
@@ -231,7 +235,7 @@ class Game:
                             pygame.mixer.Sound.play(coinCollected)
 
     def playAgain(self):
-        pygame.mixer.music.play(-1)
+        pygame.mixer.music.unpause()
         global obstacleImages
         global coinImage
         global speed

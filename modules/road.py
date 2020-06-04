@@ -11,4 +11,3 @@ class Road:
         self.posy += self.speed
         if(self.posy > 768):
             self.posy -= 768+self.height
-        

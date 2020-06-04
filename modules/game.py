@@ -4,6 +4,7 @@ from sys import exit
 from modules import car
 from modules import obstacle
 from modules import road
+from modules import coin
 import random
 
 # Screen Size
@@ -21,6 +22,7 @@ obstacleImages = [
     pygame.image.load('images/box.jpg'),
     pygame.image.load('images/oilBarrel.png'),
     ]
+coinImage = pygame.image.load('images/coin.png')
 
 class Game:
     def __init__(self, size):
@@ -33,11 +35,14 @@ class Game:
         self.R2 = road.Road(roadImage, [0, 0 - roadImage.get_rect().height], speed)
         self.car = car.Car(carImage, [ self.R1.width/2 - carImage.get_rect().width/2, self.R1.height - carImage.get_rect().height - 50 ], speed)
         self.obstacles = []
+        self.coins = []
         self.pause = True
         self.score = 0
+        self.coinsCollected = 0
 
     def run(self):
         global obstacleImages
+        global coinImage
         global speed
         y = 150
         pygame.init()
@@ -47,11 +52,13 @@ class Game:
         self.R1.image = self.R1.image.convert()
         self.R2.image = self.R2.image.convert()
         self.car.image = self.car.image.convert_alpha()
+        coinImage = coinImage.convert_alpha()
         for images in obstacleImages:
             images = images.convert_alpha()
         for i in range(3):
             image = obstacleImages[random.randint(0, 3)]
             self.obstacles.append(obstacle.Obstacle(image,  [random.randint(0, 1024 - image.get_rect().width), -y], speed))
+            self.coins.append(coin.Coin(coinImage, [random.randint(0, 1024 - coinImage.get_rect().width), -y - 120], speed))
             y += 319
         self.paused('BRAKE FAIL', 'PLAY')
         while True:
@@ -83,8 +90,12 @@ class Game:
         self.screen.blit(self.R2.image, (self.R2.posx, self.R2.posy))
         for ob in self.obstacles:
             self.screen.blit(ob.image, (ob.posx, ob.posy))
+        for coin in self.coins:
+            if not coin.isRecorded:
+                self.screen.blit(coin.image, (coin.posx, coin.posy))
         self.screen.blit(self.car.image, (self.car.posx, self.car.posy))
-        self.screen.blit(self.font.render(f'SCORE: {self.score}', True, (250, 70, 85)), (20, 0))
+        # pygame.draw.rect(self.screen, (45, 85, 135, 1), (0, 0, 600, 70))
+        self.screen.blit(self.font.render(f'SCORE: {self.score}       Coins: {self.coinsCollected}', True, (0, 200, 255)), (20, 0))
         pygame.display.update()
         self.R1.move()
         self.R2.move()
@@ -97,6 +108,12 @@ class Game:
                 ob.posy = -189
                 ob.posx = random.randint(0, 1024 - ob.width)
                 ob.isRecorded = False
+        for coin in self.coins:
+            coin.move()
+            if coin.posy > 768:
+                coin.posy = -189
+                coin.posx = random.randint(0, 1024 - coin.width)
+                coin.isRecorded = False
         self.fpsClock.tick(60)
 
     def paused(self, title, string, gameOver = False):
@@ -105,8 +122,8 @@ class Game:
         text = font.render(f'{title}', True, (0, 0, 0))
         textRect = text.get_rect()
         textRect.center = (screenSize[0]/2, screenSize[1]/6)
-        font = pygame.font.Font('fonts/comic.ttf', 60)
-        _score = font.render(f'Final Score: {self.score}', True, (0, 0, 0))
+        font = pygame.font.Font('fonts/comic.ttf', 50)
+        _score = font.render(f'Final Score: {self.score}  Coins Collected: {self.coinsCollected}', True, (0, 0, 0))
         _scoreRect = _score.get_rect()
         _scoreRect.center = (screenSize[0]/2, screenSize[1]/3)
         resume = font.render(f'{string}', True, (0, 0, 0))
@@ -164,12 +181,11 @@ class Game:
                 if ob.posx <= self.car.posx:
                     if ob.posx + 0.8*ob.width >= self.car.posx:
                         self.pause = True
-                        self.paused('GAME OVER!!!', 'Play Again', True)
+                        self.paused('YOU CRASHED!!!', 'Play Again', True)
                 else:
                     if self.car.posx + self.car.width >= ob.posx + 0.2*ob.width:
                         self.pause = True
-                        self.paused('GAME OVER!!!', 'Play Again', True)
-                return 0
+                        self.paused('YOU CRASHED!!!', 'Play Again', True)
             elif ob.posy + 0.2*ob.height > self.car.posy + self.car.height:
                 if not ob.isRecorded:
                     ob.isRecorded = True
@@ -180,12 +196,29 @@ class Game:
                         self.car.speed += 1
                         for obj in self.obstacles:
                             obj.speed += 1
+                        for coin in self.coins:
+                            coin.speed +=1
+        for coin in self.coins:
+            if coin.posy + coin.height >= self.car.posy and coin.posy <= self.car.posy + self.car.height:
+                if coin.posx <= self.car.posx:
+                    if coin.posx + coin.width >= self.car.posx:
+                        if not coin.isRecorded:
+                            self.coinsCollected += 1
+                            coin.isRecorded = True
+                else:
+                    if self.car.posx + self.car.width >= coin.posx:
+                        if not coin.isRecorded:
+                            self.coinsCollected += 1
+                            coin.isRecorded = True
 
     def playAgain(self):
         global obstacleImages
+        global coinImage
         global speed
         self.obstacles = []
+        self.coins = []
         self.score = 0
+        self.coinsCollected = 0
         self.R1.speed = speed
         self.R2.speed = speed
         self.car.speed = speed
@@ -193,5 +226,6 @@ class Game:
         for i in range(3):
             image = obstacleImages[random.randint(0, 3)]
             self.obstacles.append(obstacle.Obstacle(image,  [random.randint(0, 1024 - image.get_rect().width), -y], speed))
+            self.coins.append(coin.Coin(coinImage, [random.randint(0, 1024 - coinImage.get_rect().width), -y - 120], speed))
             y += 319
         self.car.posx = screenSize[0]/2 - self.car.width/2

@@ -24,6 +24,12 @@ obstacleImages = [
     ]
 coinImage = pygame.image.load('images/coin.png')
 
+
+# Audios
+crash = 'audios/crash.wav'
+coinCollected = 'audios/coinCollected.wav'
+backgroundMusic = 'audios/backgroundMusic.wav'
+
 class Game:
     def __init__(self, size):
         global speed
@@ -44,8 +50,16 @@ class Game:
         global obstacleImages
         global coinImage
         global speed
+        global crash
+        global coinCollected
+        global backgroundMusic
         y = 150
         pygame.init()
+        pygame.mixer.init()
+        crash = pygame.mixer.Sound(crash)
+        coinCollected = pygame.mixer.Sound(coinCollected)
+        backgroundMusic = pygame.mixer.music.load(backgroundMusic)
+        pygame.mixer.music.play(-1)
         pygame.display.set_caption('BRAKE FAIL')
         self.font = pygame.font.Font('fonts/comic.ttf', 50)
         self.screen = pygame.display.set_mode(self.size, 0, 32)
@@ -94,7 +108,6 @@ class Game:
             if not coin.isRecorded:
                 self.screen.blit(coin.image, (coin.posx, coin.posy))
         self.screen.blit(self.car.image, (self.car.posx, self.car.posy))
-        # pygame.draw.rect(self.screen, (45, 85, 135, 1), (0, 0, 600, 70))
         self.screen.blit(self.font.render(f'SCORE: {self.score}       Coins: {self.coinsCollected}', True, (0, 200, 255)), (20, 0))
         pygame.display.update()
         self.R1.move()
@@ -181,10 +194,14 @@ class Game:
                 if ob.posx <= self.car.posx:
                     if ob.posx + 0.8*ob.width >= self.car.posx:
                         self.pause = True
+                        pygame.mixer.music.pause()
+                        pygame.mixer.Sound.play(crash)
                         self.paused('YOU CRASHED!!!', 'Play Again', True)
                 else:
                     if self.car.posx + self.car.width >= ob.posx + 0.2*ob.width:
                         self.pause = True
+                        pygame.mixer.music.pause()
+                        pygame.mixer.Sound.play(crash)
                         self.paused('YOU CRASHED!!!', 'Play Again', True)
             elif ob.posy + 0.2*ob.height > self.car.posy + self.car.height:
                 if not ob.isRecorded:
@@ -205,13 +222,16 @@ class Game:
                         if not coin.isRecorded:
                             self.coinsCollected += 1
                             coin.isRecorded = True
+                            pygame.mixer.Sound.play(coinCollected)
                 else:
                     if self.car.posx + self.car.width >= coin.posx:
                         if not coin.isRecorded:
                             self.coinsCollected += 1
                             coin.isRecorded = True
+                            pygame.mixer.Sound.play(coinCollected)
 
     def playAgain(self):
+        pygame.mixer.music.play(-1)
         global obstacleImages
         global coinImage
         global speed

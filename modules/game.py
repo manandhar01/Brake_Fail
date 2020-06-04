@@ -1,9 +1,9 @@
 import pygame
 from pygame.locals import *
 from sys import exit
-import car
-import obstacle
-import road
+from modules import car
+from modules import obstacle
+from modules import road
 import random
 
 # Screen Size
@@ -11,6 +11,7 @@ screenSize = (1024, 768)
 
 # Speed
 speed = 7
+count = 0
 
 # Images
 roadImage = pygame.image.load('images/road.jpg')
@@ -21,8 +22,6 @@ obstacleImages = [
     pygame.image.load('images/box.jpg'),
     pygame.image.load('images/oilBarrel.png'),
     ]
-
-# FPS = 60
 
 class Game:
     def __init__(self, size):
@@ -36,13 +35,15 @@ class Game:
         self.car = car.Car(carImage, [ self.R1.width/2 - carImage.get_rect().width/2, self.R1.height - carImage.get_rect().height - 50 ], speed)
         self.obstacles = []
         self.pause = False
+        self.score = 0
 
     def run(self):
         global obstacleImages
         global speed
         y = 150
-        pygame.init
+        pygame.init()
         pygame.display.set_caption('BRAKE FAIL')
+        self.font = pygame.font.Font('fonts/comic.ttf', 50)
         self.screen = pygame.display.set_mode(self.size, 0, 32)
         self.R1.image = self.R1.image.convert()
         self.R2.image = self.R2.image.convert()
@@ -83,6 +84,7 @@ class Game:
         for ob in self.obstacles:
             self.screen.blit(ob.image, (ob.posx, ob.posy))
         self.screen.blit(self.car.image, (self.car.posx, self.car.posy))
+        self.screen.blit(self.font.render(f'Score: {self.score}', True, (255, 255, 255)), (20, 0))
         pygame.display.update()
         self.R1.move()
         self.R2.move()
@@ -94,6 +96,7 @@ class Game:
                 ob.width = ob.image.get_rect().width
                 ob.posy = -189
                 ob.posx = random.randint(0, 1024 - ob.width)
+                ob.isRecorded = False
         self.fpsClock.tick(60)
 
     def paused(self):
@@ -113,11 +116,16 @@ class Game:
     def detectCollisions(self):
         for ob in self.obstacles:
             if ob.posy + 0.8*ob.height >= self.car.posy and ob.posy + 0.2*ob.height <= self.car.posy + self.car.height:
-                if ob.posx >= self.car.posx:
-                    if self.car.posx + self.car.width > ob.posx + 0.2*ob.width:
-                        self.pause = True
-                        self.paused()
+                if ob.posx <= self.car.posx:
+                    if ob.posx + 0.8*ob.width >= self.car.posx:
+                            self.pause = True
+                            self.paused()
                 else:
-                    if ob.posx + 0.8*ob.width > self.car.posx:
+                    if self.car.posx + self.car.width >= ob.posx + 0.2*ob.width:
                         self.pause = True
                         self.paused()
+                return 0
+            elif ob.posy + 0.2*ob.height > self.car.posy + self.car.height:
+                if not ob.isRecorded:
+                    ob.isRecorded = True
+                    self.score += 1

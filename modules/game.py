@@ -100,6 +100,18 @@ class Game:
         self.fpsClock.tick(60)
 
     def paused(self):
+        select = 0
+        font = pygame.font.Font('fonts/comic.ttf', 100)
+        text = font.render('Game Paused', True, (0, 0, 0))
+        textRect = text.get_rect()
+        textRect.center = (screenSize[0]/2, screenSize[1]/4)
+        font = pygame.font.Font('fonts/comic.ttf', 60)
+        resume = font.render('Resume', True, (0, 0, 0))
+        resumeRect = resume.get_rect()
+        resumeRect.center = (screenSize[0]/2, screenSize[1]/2)
+        _quit = font.render('Quit', True, (0, 0, 0))
+        _quitRect = _quit.get_rect()
+        _quitRect.center = (screenSize[0]/2, 3*screenSize[1]/4)
         while self.pause:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -107,11 +119,31 @@ class Game:
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         self.pause = False
+                    elif event.key == K_DOWN:
+                        select = 1
+                    elif event.key == K_UP:
+                        select = 0
+                    elif event.key == K_RETURN:
+                        if select == 0:
+                            self.pause = False
+                        else:
+                            exit()
                 elif event.type == KEYUP:
                     if event.key == K_LEFT:
                         self.car.isMovingLeft = False
                     elif event.key == K_RIGHT:
                         self.car.isMovingRight = False
+            self.screen.fill((200, 200, 225))
+            self.screen.blit(text, textRect)
+            pygame.draw.rect(self.screen, (20, 255, 50), (screenSize[0]/2 - 120, screenSize[1]/2 - 50, 240, 100))
+            pygame.draw.rect(self.screen, (255, 0, 50), (screenSize[0]/2 - 120, 3*screenSize[1]/4 - 50, 240, 100))
+            if select == 0:
+                pygame.draw.rect(self.screen, (0, 0, 0), (screenSize[0]/2 - 120, screenSize[1]/2 - 50, 240, 100), 10)
+            else:
+                pygame.draw.rect(self.screen, (0, 0, 0), (screenSize[0]/2 - 120, 3*screenSize[1]/4 - 50, 240, 100), 10)
+            self.screen.blit(resume, resumeRect)
+            self.screen.blit(_quit, _quitRect)
+            pygame.display.update()
 
     def detectCollisions(self):
         for ob in self.obstacles:

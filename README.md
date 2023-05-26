@@ -9,4 +9,4 @@ python main.py
 ```
 
 ## Demo
-https://github.com/manandhar01/Brake_Fail/assets/43639647/9bd20993-3b01-498a-8af4-9f4fee431b22
+https://github.com/manandhar01/Brake_Fail/assets/43639647/66b559b8-2a17-41e0-a200-a9535e66d546
